@@ -105,7 +105,7 @@ points on this subset), so the choice buys little; gpt-5.4 is taken as the rule 
 of the frontier candidates. The sweep cost $11.07 (five answer runs with their judge passes, the stalled first
 Opus attempt included).
 
-## The one frontier pass (2026-10-26, 20:01-20:26 UTC+8)
+## The one frontier pass (2026-10-26, 20:01-20:26 local time; 03:01-03:26 UTC on 2026-10-27)
 
 Reduce-only: the same sanitized item text, the same fused top-25 pools, the cached DeepSeek V4.1 Flash relevance
 map, the frozen never-abstain prompt, and openai/gpt-5.4 (reasoning effort minimal) in place of gpt-5.4-mini for
