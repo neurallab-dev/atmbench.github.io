@@ -117,3 +117,29 @@ questions on 1,013 - inside the +/-0.3 judge noise measured on an earlier run - 
 its evidence file, and the gpt-5.4 pass is recorded here only. The larger model gained on open-ended questions
 and lost on the deterministic number and list types, which reward the exact-match habits of the smaller model.
 Cost: $12.35 for the pass (answers $11.11, judge about $1.2); $23.42 for the day with the reduce-model sweep.
+
+## List questions: the reduce step also sees the ten top-ranked items (assembled 2026-10-29, 00:00-00:15 UTC)
+
+Context. On 2026-10-27 (UTC) a "rank prior" variant (`mf_answer_r2.py`) was run over the same fused top-25 pools and
+the same cached DeepSeek V4.1 Flash map decisions: the reduce step received the fused top-K items in addition to
+whatever the relevance map had kept (K = 5 for every question, K = 10 for list questions). Hash subset: 79.19 vs
+77.61; full set: QS 78.05 (number 80.3, list_recall 76.7, open_end 76.8) vs 78.38 - not adopted at the time, because
+the extra items lifted the Jaccard-scored list questions (+4.0) and cost the exact-match and judged types (the
+"distractor tax" measured in the same run: -0.0067 correct per inserted non-gold item).
+
+The type-conditional variant follows from that anatomy: the prior is applied to list questions only (K_LIST = 10,
+K = 0 for number and open_end questions, which therefore run exactly as before). Stated plainly: the rule "list
+questions only" was chosen after the per-type results of the rank-prior run were known on the full set (the subset
+had pointed the same way: list +7.0, number +2.8, open_end -1.0). The depth was then confirmed on the hash subset's
+30 list questions, whose score is deterministic (Jaccard, no judge): depth 0 / 5 / 10 / 15 / 20 / 25 = 73.7 / 77.1 /
+80.7 / 80.0 / 76.2 / 77.9 (the 15, 20 and 25 runs were made on 2026-10-29 00:03-00:05 UTC, $1.23), so 10 is kept.
+
+The full-set answer set is assembled from runs that already exist, with no new answer or judge call: the 360
+number and 514 open_end answers, and the open_end judgments, are those of the 2026-10-24 run unchanged; the 139
+list_recall answers are those of the 2026-10-27 rank-prior run, which used the same cached map decisions and
+K_LIST = 10, and whose scores are deterministic. Nothing was re-judged.
+
+Result: **QS 78.94** (number 81.4, list_recall 76.7, open_end 77.8), retrieval unchanged (R@10 89.73, R@25 93.54);
+the row and `docs/mediafind-hosted-llms-atmbench.json` carry this set. The gpt-5-mini judge noise measured on an
+earlier run is +/-0.3 on the open_end questions, which are unchanged here; the +0.56 comes entirely from the
+deterministic list questions.

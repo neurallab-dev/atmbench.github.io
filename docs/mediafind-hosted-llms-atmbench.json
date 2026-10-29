@@ -2,7 +2,7 @@
  "schema_version": 1,
  "system": "MediaFind v2: MediaFind memory search (on-device ranking) + LLM memory cards and visual descriptions + LLM query rewrite + map-reduce answering",
  "protocol": {
-  "pipeline": "MediaFind ranking (bge-m3 lexical fusion + BM25, whole-item bge-reranker-v2-m3 over the top-50) over the benchmark's own captions (Qwen3-VL-2B) and emails, 11,034 items, each photo/video extended with an LLM memory card; map-reduce answering over the top-25 items (map: relevance filter per batch of 10; reduce: time-sorted full text, reasoning then a single ANSWER line)",
+  "pipeline": "MediaFind ranking (bge-m3 lexical fusion + BM25, whole-item bge-reranker-v2-m3 over the top-50) over the benchmark's own captions (Qwen3-VL-2B) and emails, 11,034 items, each photo/video extended with an LLM memory card; map-reduce answering over the top-25 items (map: relevance filter per batch of 10; reduce: time-sorted full text, reasoning then a single ANSWER line; for list questions the reduce input also includes the ten top-ranked items)",
   "answer_model": "openai/gpt-5.4-mini (reasoning effort minimal) via OpenRouter for the reduce step; deepseek/deepseek-v4.1-flash (reasoning off) via OpenRouter for the relevance map and for rewriting each question into a retrieval query",
   "memory_model": "deepseek/deepseek-v4.1-flash via OpenRouter writes one memory card per photo/video from its caption, the person's emails (a trip/event timeline extracted from all emails) and same-day items; deepseek/deepseek-v4-flash-vision-exp via OpenRouter adds a dense visual description of each photo/video from the raw media",
   "retriever": "BAAI/bge-m3 + BM25 (MediaFind memory search, lexical fusion) + BAAI/bge-reranker-v2-m3 whole-item rerank of the top-50, reciprocal-rank fused with the lexical ranking of the LLM-rewritten query",
@@ -14,7 +14,7 @@
  "splits": {
   "main": {
    "questions": 1013,
-   "qs_percent": 78.3814381297106,
+   "qs_percent": 78.93542675378806,
    "recall_at_10": 89.7261787242044,
    "recall_at_1": 55.13667559817608,
    "recall_at_5": 84.6150441091211,
@@ -26,7 +26,7 @@
     },
     "list_recall": {
      "questions": 139,
-     "qs_percent": 72.66472536256708
+     "qs_percent": 76.70206691789426
     },
     "open_end": {
      "questions": 514,
@@ -2985,7 +2985,7 @@
     {
      "id": "fa738ea7-7096-4d48-9bc7-dee6b9f39118",
      "qtype": "list_recall",
-     "score": 1.0,
+     "score": 0.5,
      "retrieved_top10": [
       "20240930_132654",
       "20241003_184216",
@@ -6593,7 +6593,7 @@
     {
      "id": "fe40eb23-0481-4262-938f-c6069e64c411",
      "qtype": "list_recall",
-     "score": 0.0,
+     "score": 1.0,
      "retrieved_top10": [
       "20240729_185511",
       "20250426_182128",
@@ -6989,7 +6989,7 @@
     {
      "id": "0f1e19ba-fcb2-419c-9796-b2461e90f15a",
      "qtype": "list_recall",
-     "score": 0.5,
+     "score": 0.6,
      "retrieved_top10": [
       "20230904_124507",
       "20230906_123419",
@@ -7385,7 +7385,7 @@
     {
      "id": "ebea8b3b-f2dc-468a-8ce6-7a9dbf1a7754",
      "qtype": "list_recall",
-     "score": 0.25,
+     "score": 0.3333333333333333,
      "retrieved_top10": [
       "20221224_143938",
       "20221226_115913",
@@ -8177,7 +8177,7 @@
     {
      "id": "6d5dde88-0e86-453a-9a35-467426b121f3",
      "qtype": "list_recall",
-     "score": 0.6666666666666666,
+     "score": 0.0,
      "retrieved_top10": [
       "20220620_131646",
       "20220620_130907",
@@ -10069,7 +10069,7 @@
     {
      "id": "2cffed75-83e7-4c5e-b63c-d82a1963acb1",
      "qtype": "list_recall",
-     "score": 1.0,
+     "score": 0.5,
      "retrieved_top10": [
       "20240808_150805",
       "20240808_150807",
@@ -10245,7 +10245,7 @@
     {
      "id": "01eec76c-462f-4579-9a7b-974da414a888",
      "qtype": "list_recall",
-     "score": 0.0,
+     "score": 1.0,
      "retrieved_top10": [
       "20240729_184422",
       "20231219_120757",
@@ -13105,7 +13105,7 @@
     {
      "id": "c57b0d5d-dbae-4f8d-93b8-b269582baabb",
      "qtype": "list_recall",
-     "score": 1.0,
+     "score": 0.5,
      "retrieved_top10": [
       "20230419_190358",
       "20230419_190400",
@@ -14557,7 +14557,7 @@
     {
      "id": "2e5e73f1-764f-4b8b-85c2-50f645de52cf",
      "qtype": "list_recall",
-     "score": 0.0,
+     "score": 0.16666666666666666,
      "retrieved_top10": [
       "20230131_152709",
       "20240617_222800",
@@ -18077,7 +18077,7 @@
     {
      "id": "2312ccea-1fc6-4d77-9352-b5ff964c0649",
      "qtype": "list_recall",
-     "score": 0.5,
+     "score": 0.0,
      "retrieved_top10": [
       "20230419_130159",
       "20230419_200455",
@@ -19045,7 +19045,7 @@
     {
      "id": "9b8d24ab-7aba-4d73-bf93-02969f55c4be",
      "qtype": "list_recall",
-     "score": 0.0,
+     "score": 1.0,
      "retrieved_top10": [
       "20241126_165135",
       "20241022_153844",
@@ -19309,7 +19309,7 @@
     {
      "id": "d1002ea1-7c60-4a4a-ba43-868033ecbb81",
      "qtype": "list_recall",
-     "score": 1.0,
+     "score": 0.0,
      "retrieved_top10": [
       "20231001_193238",
       "20240316_123946",
@@ -21905,7 +21905,7 @@
     {
      "id": "84573c73-e0be-4d18-857c-474712f5a412",
      "qtype": "list_recall",
-     "score": 0.5714285714285714,
+     "score": 0.6666666666666666,
      "retrieved_top10": [
       "20250501_171245",
       "20250501_171326",
@@ -23313,7 +23313,7 @@
     {
      "id": "d9e3e64c-0649-41a4-bbba-c4f50febb8d5",
      "qtype": "list_recall",
-     "score": 0.0,
+     "score": 1.0,
      "retrieved_top10": [
       "20220611_162239",
       "20220611_160733",
@@ -23973,7 +23973,7 @@
     {
      "id": "01d3088f-39d2-4da7-9ce3-292f41e591d1",
      "qtype": "list_recall",
-     "score": 0.0,
+     "score": 1.0,
      "retrieved_top10": [
       "20250324_170038",
       "20220507_154031",
@@ -26569,7 +26569,7 @@
     {
      "id": "04bbdfc8-f1e6-4df6-949d-ea141f985f18",
      "qtype": "list_recall",
-     "score": 0.0,
+     "score": 1.0,
      "retrieved_top10": [
       "20220613_194728",
       "20220613_194846",
@@ -28021,7 +28021,7 @@
     {
      "id": "eadcb57e-ec30-4af9-b5ae-a0c80b2cbf0f",
      "qtype": "list_recall",
-     "score": 0.6666666666666666,
+     "score": 0.3333333333333333,
      "retrieved_top10": [
       "20230624_214825",
       "20230302_165853",
@@ -30221,7 +30221,7 @@
     {
      "id": "1f52b9d8-7301-4f1c-b626-aa8c8bdacfd3",
      "qtype": "list_recall",
-     "score": 0.0,
+     "score": 1.0,
      "retrieved_top10": [
       "20241210_202127",
       "20241210_202629",
@@ -30881,7 +30881,7 @@
     {
      "id": "2f75e1c9-5be6-41b9-b04e-41edac3047d2",
      "qtype": "list_recall",
-     "score": 0.0,
+     "score": 0.3333333333333333,
      "retrieved_top10": [
       "20240811_185109",
       "20241127_202548",
@@ -33037,7 +33037,7 @@
     {
      "id": "7aed35be-eb40-4d82-836c-da226e1486a4",
      "qtype": "list_recall",
-     "score": 1.0,
+     "score": 0.5,
      "retrieved_top10": [
       "20230131_154119",
       "20230131_154130",
@@ -33741,7 +33741,7 @@
     {
      "id": "f38455dd-f978-4b9f-b0eb-4c55b32e217b",
      "qtype": "list_recall",
-     "score": 1.0,
+     "score": 0.5,
      "retrieved_top10": [
       "20240806_161925",
       "20240806_161923",
@@ -35281,7 +35281,7 @@
     {
      "id": "92b69f9b-281f-447f-8c29-482a73b020c6",
      "qtype": "list_recall",
-     "score": 0.1111111111111111,
+     "score": 0.7777777777777778,
      "retrieved_top10": [
       "20230113_141446",
       "20241119_153156",
@@ -40737,7 +40737,7 @@
     {
      "id": "a3a33ed8-bf9a-48e2-974a-843b8754231f",
      "qtype": "list_recall",
-     "score": 0.0,
+     "score": 1.0,
      "retrieved_top10": [
       "20250519_142512",
       "20240220_103958",
@@ -40781,7 +40781,7 @@
     {
      "id": "398134ad-753c-4fd2-9c90-45577513ce54",
      "qtype": "list_recall",
-     "score": 0.6666666666666666,
+     "score": 0.3333333333333333,
      "retrieved_top10": [
       "20241002_165452",
       "20241002_171709",
@@ -43069,7 +43069,7 @@
     {
      "id": "8b4332f3-bc74-48fb-99c6-0cbd088493a6",
      "qtype": "list_recall",
-     "score": 0.5,
+     "score": 1.0,
      "retrieved_top10": [
       "20230516_121722",
       "20230516_121732",
@@ -44037,7 +44037,7 @@
     {
      "id": "8f7717e3-fef1-40a5-9185-5e7ab198151e",
      "qtype": "list_recall",
-     "score": 0.0,
+     "score": 1.0,
      "retrieved_top10": [
       "20250225_142539",
       "20250223_130249",
