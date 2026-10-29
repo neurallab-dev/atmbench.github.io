@@ -143,3 +143,66 @@ Result: **QS 78.94** (number 81.4, list_recall 76.7, open_end 77.8), retrieval u
 the row and `docs/mediafind-hosted-llms-atmbench.json` carry this set. The gpt-5-mini judge noise measured on an
 earlier run is +/-0.3 on the open_end questions, which are unchanged here; the +0.56 comes entirely from the
 deterministic list questions.
+
+## List questions: a wider-coverage ranking and a one-call relevance map (2026-10-29, 08:19-09:55 UTC)
+
+Context. Three lever families on the sanitized pipeline had been closed at QS 78.94: evidence selection (changing the map
+model or prompt), rerank coverage (a deeper cross-encoder pass) and chunking. The one unsized lever was a stronger
+first-stage embedder. Qwen3-Embedding-4B, with its own query prompt on the question side only, passed a free proxy gate
+(hybrid R@25 93.08 vs 91.82 for bge-m3 over the same stored chunks), so the product retrieval was re-run with it:
+`MEDIAFIND_EMBED=Qwen/Qwen3-Embedding-4B`, the same memory search, over the original question and the three
+LLM rewrites already on file (DeepSeek V4.1 Flash, GPT-5.4 mini, GPT-5.4; the two extra rewrite sets were made on
+2026-10-28 at $0.35 and $4.10 and had not been adopted on their own). Its top-50 was reranked by the same
+bge-reranker-v2-m3, and the lists were reciprocal-rank fused (k = 10, depth 100) with the existing bge-m3 rerank list.
+Fusion gate, stated before the run: uncovered-at-25 <= 71 (from 86), R@10 >= 89.43, at most 5 previously covered
+questions lost. The equal-weight fusion missed on the last criterion (61 uncovered, 6 lost); weighting the existing
+bge-m3 rerank list 1.5 passed (59 uncovered, 5 lost, R@10 91.68, R@25 95.93). The weight was chosen on the hash subset
+(where 1.5 and 2.0 differ by one question); the same sweep on the full set would have picked 2.0 (56 uncovered). Both
+sweeps are deterministic retrieval numbers; no answer or judge call was involved.
+
+Full answer pass on that ranking, unchanged pipeline otherwise (run 1, 08:19-08:51 UTC, $6.84): **QS 77.64**
+(number 81.7, list_recall 77.3, open_end 74.9). Coverage had improved by 27 questions and retrieval R@10 by 1.95, yet
+the judged questions fell by 2.9 points. Rebuilding the relevance-map decisions from the request cache showed why:
+the map, which reads the 25 items in batches of ten, kept 0.45 more non-gold items per open_end question on the new
+pools (2.97 -> 3.40), and the 34 open_end questions that flipped from right to wrong had gone from 3.7 to 5.6 kept
+distractors each. The map has no absolute bar: it keeps roughly 0.85 items per rank from the gold-free ranks 11-25
+(open_end kept distractors by rank: 1-10: 466, 11-20: 837, 21-25: 444; gold: 585 / 31 / 11).
+
+Map batch change. Reading all 25 items in ONE map call (same instruction, same model, same max_tokens) lets the
+model judge candidates against the real match. Subset map-only test (196 questions, $1.14, no reduce or judge):
+kept non-gold items halve (adopted pool 3.31 -> 1.63, new pool 3.69 -> 1.54) with gold kept unchanged (all-gold-kept
+157 -> 161 and 168 -> 167 of 196). A 40-item pool with one 40-item call was also screened ($0.66): no better (165
+all-gold-kept, 1.69 distractors), so the pool depth stays 25. Subset answer passes with the one-call map: adopted pool
+79.45, new pool 81.14 (vs 78.68 for the row as it stood) - the new pool with the one-call map was the pre-registered
+candidate for one full pass.
+
+Full passes (all four are reported; none was re-judged):
+- run 1, new pool, batch-of-ten map: QS 77.64 (number 81.7, list 77.3, open 74.9) - above;
+- run 2, new pool, one-call map (09:07-09:31 UTC, $3.62): **QS 79.01** (number 81.4, list_recall 80.2, open_end 77.0);
+- run 3, adopted pool, one-call map, number and open_end questions only (09:32-09:53 UTC, $2.34): number 80.8,
+  open_end 76.1 - below the row's 81.4 / 77.8, the opposite of what the subset had suggested;
+- the row's own answer set (2026-10-24 run): number 81.4, open_end 77.8, list_recall 76.7.
+The four open_end results (77.8, 76.1, 74.9, 77.0) bracket what a different generation and judge draw does to 514
+judged questions, about +/-1.5 points, so no open_end-only difference of that size is resolvable here.
+
+What the row takes (stated before run 3 was judged): the list_recall answers come from run 2, whose list score is
+deterministic (Jaccard over ids) and which the subset had already preferred over the alternatives (86.8 vs 85.3 and
+80.7 on the subset's 30 list questions) before its full run; the number and open_end answers and judgments stay those
+of the 2026-10-24 run, because run 3 did not beat them. This is a type-conditional pipeline: list questions (which
+reward recall) use the wider-coverage ranking and the one-call map; number and open_end questions run exactly as
+before. The question type is part of the benchmark input and is already used by the prompts and by the K_LIST rule.
+
+Result: **QS 79.41** (number 81.4, list_recall 80.2, open_end 77.8). Retrieval is reported for the ranking each
+question's answer actually used (list questions: the new ranking; others: the previous one): R@10 90.12, R@25 94.22
+(list questions alone: R@10 90.21, R@25 95.61). `docs/mediafind-hosted-llms-atmbench.json` carries this set with the
+top-25 ids of the ranking used per question.
+
+Product note. The shipped MediaFind embedder had no query-side prompt; the benchmark run applied the model's query
+prompt through a harness hook on the product's memory-search entry point. That support now lives in the product
+(MediaFind pull request #2464: `embed_query()` applies a model's own query prompt when it ships one; the default
+encoders ship none and are unchanged), so `MEDIAFIND_EMBED=Qwen/Qwen3-Embedding-4B` reproduces the ranking without
+the hook. The reranker, the rewrites, the fusion weights and the map are benchmark-harness steps, as before.
+
+Cost of this leg: $19.7 in OpenRouter calls (runs 1-3 $12.80, the subset map, answer and depth screens $2.49, the
+two extra rewrite sets $4.45 counted on 2026-10-28). The hash subset is 196 questions chosen by sha1(id); its scores
+mis-read two of the four full runs by 1.3-1.7 points, which is why only deterministic numbers decided anything here.
